@@ -1,42 +1,35 @@
 # Cardian Sprite Studio
 
-**Cardian’s branded pixel art desktop app**, based on [LibreSprite](https://github.com/LibreSprite/LibreSprite) (GPLv2).
+**Download → run → sign in inside the app.**
 
-Create card art, then **sync sprites to your Cardian account** with the bundled `cardian-sync` CLI. Sprites show up in [Web Studio](https://playcardian.com/art-studio) on playcardian.com.
+Native desktop app for Cardian card art. Opens Sprite Studio in a Cardian-branded window so players log in, draw, save, and publish without a separate CLI.
 
 | | |
 |---|---|
 | Product | **Cardian Sprite Studio** |
 | Downloads | [Releases](https://github.com/allenmj1/cardian-art-app/releases) |
-| Account login | https://playcardian.com/art-studio/desktop-auth |
-| Web studio | https://playcardian.com/art-studio/web |
+| Website | https://playcardian.com/art-studio |
 
-See **[CARDIAN.md](./CARDIAN.md)** for branding, sync API, and release notes.
+## For players
 
-## Download
+1. Download the zip for your platform
+2. Run **CardianSpriteStudio**
+3. Sign in with your Cardian account **in the app window**
+4. Open the editor, draw, Save or Publish
 
-| Platform | Asset |
-|----------|--------|
-| Windows | `cardian-sprite-studio-windows.zip` |
-| macOS (Apple Silicon) | `cardian-sprite-studio-macos-arm64.dmg` |
-| Linux | `cardian-sprite-studio-linux.AppImage` |
-
-After installing, use **File → Export** as PNG, then:
+## Develop
 
 ```bash
-cd cardian-sync
-node sync.mjs login
-node sync.mjs upload ./my-art.png --name "My Card"
+cd desktop-app
+npm install
+npm start
 ```
 
-## Upstream
+## Build release packages
 
-This project is a fork of LibreSprite, which originated as a fork of Aseprite under GPLv2.
+```bash
+node scripts/package-release.mjs
+node scripts/publish-release.mjs v1.2.0
+```
 
-* Real-time animation previews, onion skinning, layers & frames
-* Pixel-precise tools, palettes, multiple sprites
-* See [INSTALL.md](./INSTALL.md) to compile from source
-
-## License
-
-GNU General Public License version 2 — see [LICENSE.txt](./LICENSE.txt).
+App source: `desktop-app/` (Electron). Players only receive compiled binaries.

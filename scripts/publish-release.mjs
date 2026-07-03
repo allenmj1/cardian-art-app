@@ -6,7 +6,7 @@ import { fileURLToPath } from 'node:url';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const root = path.resolve(__dirname, '..');
 const dist = path.join(root, 'dist-release');
-const tag = process.argv[2] || 'v1.1.0';
+const tag = process.argv[2] || 'v1.2.0';
 
 function getToken() {
   const out = execSync('git credential fill', {
@@ -42,25 +42,18 @@ if (existing.ok) {
       tag_name: tag,
       name: `Cardian Sprite Studio ${tag}`,
       body: [
-        '**Cardian Sprite Studio** — branded desktop pixel editor for Cardian.',
+        '**Cardian Sprite Studio** — simple desktop app.',
         '',
-        'Binary-only packages (no source code).',
+        '1. Download and unzip',
+        '2. Run **CardianSpriteStudio**',
+        '3. Sign in with your Cardian account **inside the app**',
+        '4. Draw, save, and publish',
+        '',
+        'No CLI. No token paste. Binary only.',
         '',
         '### Downloads',
         '- **Windows:** `cardian-sprite-studio-windows.zip`',
-        '- **macOS (Apple Silicon):** `cardian-sprite-studio-macos-arm64.zip`',
         '- **Linux:** `cardian-sprite-studio-linux-x64.zip`',
-        '',
-        '### Includes',
-        '- `CardianSpriteStudio` editor',
-        '- `CardianSync` account sync tool (compiled)',
-        '- `README.txt` quick start',
-        '',
-        '### Sync',
-        '1. Export PNG from the editor',
-        '2. Run `CardianSync login` (token from https://playcardian.com/art-studio/desktop-auth)',
-        '3. `CardianSync upload art.png --name "My Art"`',
-        '4. https://playcardian.com/art-studio',
       ].join('\n'),
       draft: false,
       prerelease: false,
@@ -73,7 +66,6 @@ if (existing.ok) {
 
 const assets = [
   'cardian-sprite-studio-windows.zip',
-  'cardian-sprite-studio-macos-arm64.zip',
   'cardian-sprite-studio-linux-x64.zip',
 ];
 

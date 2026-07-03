@@ -1,0 +1,57 @@
+{
+  "name": "cardian-sprite-studio",
+  "version": "1.2.0",
+  "private": true,
+  "description": "Cardian Sprite Studio — create card art and sync to your account",
+  "main": "main.cjs",
+  "author": "Cardian",
+  "license": "GPL-2.0-or-later",
+  "scripts": {
+    "start": "electron .",
+    "pack:win": "electron-builder --win portable --x64",
+    "pack:linux": "electron-builder --linux AppImage --x64",
+    "pack": "electron-builder --win portable --linux AppImage --x64"
+  },
+  "build": {
+    "appId": "com.playcardian.sprite-studio",
+    "productName": "CardianSpriteStudio",
+    "copyright": "Copyright © Cardian",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "main.cjs",
+      "preload.cjs",
+      "renderer/**/*",
+      "assets/**/*"
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "dir",
+          "arch": ["x64"]
+        }
+      ],
+      "signAndEditExecutable": false,
+      "icon": "assets/icon.png"
+    },
+    "linux": {
+      "target": ["AppImage"],
+      "artifactName": "CardianSpriteStudio.AppImage",
+      "category": "Graphics",
+      "icon": "assets/icon.png"
+    },
+    "mac": {
+      "target": ["dmg"],
+      "artifactName": "CardianSpriteStudio.dmg",
+      "icon": "assets/icon.png"
+    },
+    "portable": {
+      "artifactName": "CardianSpriteStudio.exe"
+    }
+  },
+  "devDependencies": {
+    "electron": "^33.2.1",
+    "electron-builder": "^25.1.8"
+  }
+}

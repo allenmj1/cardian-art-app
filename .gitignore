@@ -1,5 +1,7 @@
 dist-release/
 vendor/
+desktop-app/dist/
+desktop-app/node_modules/
 *.exe
 *.dmg
 *.AppImage
