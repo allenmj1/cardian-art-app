@@ -8,7 +8,13 @@ const STUDIO_URL = process.env.CARDIAN_STUDIO_URL || 'https://playcardian.com/ar
 const GITHUB_REPO = 'allenmj1/cardian-art-app';
 const UPDATE_ASSET = 'CardianSpriteStudio.exe';
 const isDev = !app.isPackaged;
-const iconPath = path.join(__dirname, 'assets', 'icon.png');
+const iconPngPath = path.join(__dirname, 'assets', 'icon-256.png');
+const iconIcoPath = path.join(__dirname, 'assets', 'icon.ico');
+const iconFallbackPng = path.join(__dirname, 'assets', 'icon.png');
+// Windows title-bar / taskbar need a real .ico; use 256 PNG as fallback.
+const iconPath = process.platform === 'win32' && fs.existsSync(iconIcoPath)
+  ? iconIcoPath
+  : (fs.existsSync(iconPngPath) ? iconPngPath : iconFallbackPng);
 const appIcon = nativeImage.createFromPath(iconPath);
 
 function parseVersion(v) {
@@ -142,6 +148,9 @@ function createWindow() {
     icon: appIcon.isEmpty() ? iconPath : appIcon,
   });
 
+  if (!appIcon.isEmpty()) {
+    win.setIcon(appIcon);
+  }
   if (process.platform === 'darwin' && !appIcon.isEmpty()) {
     app.dock?.setIcon(appIcon);
   }
