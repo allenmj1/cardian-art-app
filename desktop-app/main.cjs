@@ -80,16 +80,39 @@ async function downloadAndInstallUpdate(downloadUrl) {
   }
   fs.writeFileSync(dest, buffer);
 
-  const child = spawn(dest, [], {
-    detached: true,
-    stdio: 'ignore',
-    windowsHide: false,
-  });
-  child.unref();
+  // Wait for this process to exit, then launch the new build.
+  // Spawning immediately can fail on Windows while the old portable is still running.
+  if (process.platform === 'win32') {
+    const batPath = path.join(os.tmpdir(), `cardian-art-studio-relaunch-${Date.now()}.cmd`);
+    const bat = [
+      '@echo off',
+      'setlocal',
+      // Give the current app time to fully quit and release file locks.
+      'timeout /t 2 /nobreak >nul',
+      `start "" "${dest.replace(/"/g, '""')}"`,
+      // Remove this helper script.
+      'del "%~f0"',
+      '',
+    ].join('\r\n');
+    fs.writeFileSync(batPath, bat, 'utf8');
+    const helper = spawn('cmd.exe', ['/c', batPath], {
+      detached: true,
+      stdio: 'ignore',
+      windowsHide: true,
+    });
+    helper.unref();
+  } else {
+    const helper = spawn(dest, [], {
+      detached: true,
+      stdio: 'ignore',
+    });
+    helper.unref();
+  }
 
+  // Quit after the relaunch helper is running.
   setTimeout(() => {
-    app.quit();
-  }, 300);
+    app.exit(0);
+  }, 200);
 
   return { ok: true, path: dest };
 }
