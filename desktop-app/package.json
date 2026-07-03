@@ -2,7 +2,7 @@
   "name": "cardian-sprite-studio",
   "version": "1.2.2",
   "private": true,
-  "description": "Cardian Sprite Studio — create card art and sync to your account",
+  "description": "Cardian Card Art Studio — create card art and sync to your account",
   "main": "main.cjs",
   "author": "Cardian",
   "license": "GPL-2.0-or-later",

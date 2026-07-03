@@ -1,21 +1,21 @@
-# Cardian Sprite Studio
+# Cardian Card Art Studio
 
-**Download → run → sign in inside the app.**
+**Download → run → sign in → make card art.** This is **not** the Cardian game client.
 
-Native desktop app for Cardian card art. Opens Sprite Studio in a Cardian-branded window so players log in, draw, save, and publish without a separate CLI.
+Native desktop app for card art only. Opens Card Art Studio in a branded window: login, LibreSprite-style editor, save sprites to your Cardian account.
 
 | | |
 |---|---|
-| Product | **Cardian Sprite Studio** |
+| Product | **Cardian Card Art Studio** |
 | Downloads | [Releases](https://github.com/allenmj1/cardian-art-app/releases) |
-| Website | https://playcardian.com/art-studio |
+| App URL | https://playcardian.com/art-studio/app |
 
 ## For players
 
-1. Download the zip for your platform
-2. Run **CardianSpriteStudio**
-3. Sign in with your Cardian account **in the app window**
-4. Open the editor, draw, Save or Publish
+1. Download **CardianSpriteStudio.exe**
+2. Double-click to run
+3. Sign in with your Cardian account **on the app landing screen**
+4. Draw with the branded pixel editor and **Save to account**
 
 ## Develop
 

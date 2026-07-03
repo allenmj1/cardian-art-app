@@ -1,7 +1,7 @@
 const { app, BrowserWindow, shell, Menu } = require('electron');
 const path = require('node:path');
 
-const STUDIO_URL = process.env.CARDIAN_STUDIO_URL || 'https://playcardian.com/art-studio/web';
+const STUDIO_URL = process.env.CARDIAN_STUDIO_URL || 'https://playcardian.com/art-studio/app';
 const isDev = !app.isPackaged;
 
 function createWindow() {
@@ -10,7 +10,7 @@ function createWindow() {
     height: 860,
     minWidth: 900,
     minHeight: 640,
-    title: 'Cardian Sprite Studio',
+    title: 'Cardian Card Art Studio',
     backgroundColor: '#030712',
     autoHideMenuBar: true,
     show: false,
@@ -28,15 +28,11 @@ function createWindow() {
   // Cardian-branded minimal menu
   const menu = Menu.buildFromTemplate([
     {
-      label: 'Cardian Sprite Studio',
+      label: 'Card Art Studio',
       submenu: [
         {
-          label: 'Sprite Studio Home',
+          label: 'Card Art Studio',
           click: () => win.loadURL(STUDIO_URL),
-        },
-        {
-          label: 'Web Editor',
-          click: () => win.loadURL(`${STUDIO_URL}/web`),
         },
         { type: 'separator' },
         { role: 'reload' },
