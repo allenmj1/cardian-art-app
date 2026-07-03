@@ -15,9 +15,10 @@ const BUCKET = 'community-art';
 const MAX_BYTES = 2 * 1024 * 1024;
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
+// Public anon key (same as the Cardian web client). Override via env or config.json.
 const DEFAULTS = {
-  supabaseUrl: process.env.CARDIAN_SUPABASE_URL || '',
-  anonKey: process.env.CARDIAN_SUPABASE_ANON_KEY || '',
+  supabaseUrl: process.env.CARDIAN_SUPABASE_URL || 'https://fabglvdajpyshiptjbhv.supabase.co',
+  anonKey: process.env.CARDIAN_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZhYmdsdmRhanB5c2hpcHRqYmh2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA4MzYzNjYsImV4cCI6MjA5NjQxMjM2Nn0.C4TlqOzzvgbJlWMIQvo1GchfpIPZe-PnQ9YC3AtyLk8',
   authUrl: process.env.CARDIAN_AUTH_URL || 'https://playcardian.com/art-studio/desktop-auth',
 };
 
