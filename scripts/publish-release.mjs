@@ -6,6 +6,7 @@ import { fileURLToPath } from 'node:url';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const root = path.resolve(__dirname, '..');
 const dist = path.join(root, 'dist-release');
+const tag = process.argv[2] || 'v1.1.0';
 
 function getToken() {
   const out = execSync('git credential fill', {
@@ -21,7 +22,6 @@ function getToken() {
 const token = getToken();
 const owner = 'allenmj1';
 const repo = 'cardian-art-app';
-const tag = 'v1.0.0';
 const headers = {
   Authorization: `Bearer ${token}`,
   Accept: 'application/vnd.github+json',
@@ -40,21 +40,27 @@ if (existing.ok) {
     headers: { ...headers, 'Content-Type': 'application/json' },
     body: JSON.stringify({
       tag_name: tag,
-      name: 'Cardian Sprite Studio v1.0.0',
+      name: `Cardian Sprite Studio ${tag}`,
       body: [
-        '**Cardian Sprite Studio** — branded LibreSprite for Cardian card art with account sync.',
+        '**Cardian Sprite Studio** — branded desktop pixel editor for Cardian.',
+        '',
+        'Binary-only packages (no source code).',
         '',
         '### Downloads',
-        '- **Windows:** `cardian-sprite-studio-windows.zip` (editor + cardian-sync)',
-        '- **macOS (Apple Silicon):** `cardian-sprite-studio-macos-arm64.dmg` (+ bundle zip with sync CLI)',
-        '- **Linux:** `cardian-sprite-studio-linux.AppImage` (+ bundle zip)',
+        '- **Windows:** `cardian-sprite-studio-windows.zip`',
+        '- **macOS (Apple Silicon):** `cardian-sprite-studio-macos-arm64.zip`',
+        '- **Linux:** `cardian-sprite-studio-linux-x64.zip`',
         '',
-        '### Account sync',
+        '### Includes',
+        '- `CardianSpriteStudio` editor',
+        '- `CardianSync` account sync tool (compiled)',
+        '- `README.txt` quick start',
+        '',
+        '### Sync',
         '1. Export PNG from the editor',
-        '2. `cd cardian-sync && node sync.mjs login`',
-        '3. Paste token from https://playcardian.com/art-studio/desktop-auth',
-        '4. `node sync.mjs upload ./art.png --name "My Art"`',
-        '5. View sprites at https://playcardian.com/art-studio',
+        '2. Run `CardianSync login` (token from https://playcardian.com/art-studio/desktop-auth)',
+        '3. `CardianSync upload art.png --name "My Art"`',
+        '4. https://playcardian.com/art-studio',
       ].join('\n'),
       draft: false,
       prerelease: false,
@@ -67,10 +73,8 @@ if (existing.ok) {
 
 const assets = [
   'cardian-sprite-studio-windows.zip',
-  'cardian-sprite-studio-macos-arm64.dmg',
-  'cardian-sprite-studio-macos-arm64-bundle.zip',
-  'cardian-sprite-studio-linux.AppImage',
-  'cardian-sprite-studio-linux-bundle.zip',
+  'cardian-sprite-studio-macos-arm64.zip',
+  'cardian-sprite-studio-linux-x64.zip',
 ];
 
 for (const name of assets) {
