@@ -1,0 +1,30 @@
+{
+  "productName": "Cardian Sprite Studio",
+  "shortName": "CardianSpriteStudio",
+  "version": "1.0.0",
+  "description": "Create custom pixel art for Cardian cards",
+  "homepage": "https://playcardian.com/art-studio",
+  "repo": "https://github.com/allenmj1/cardian-art-app",
+  "authUrl": "https://playcardian.com/art-studio/desktop-auth",
+  "deepLinkScheme": "cardian-art",
+  "theme": {
+    "primary": "#ea580c",
+    "background": "#030712",
+    "surface": "#111827",
+    "text": "#ffffff",
+    "muted": "#9ca3af"
+  },
+  "supabase": {
+    "urlEnv": "CARDIAN_SUPABASE_URL",
+    "anonKeyEnv": "CARDIAN_SUPABASE_ANON_KEY",
+    "defaults": {
+      "url": "https://YOUR_PROJECT.supabase.co",
+      "anonKey": "YOUR_ANON_KEY"
+    }
+  },
+  "installers": {
+    "windows": "cardian-sprite-studio-windows.zip",
+    "macos": "cardian-sprite-studio-macos-arm64.dmg",
+    "linux": "cardian-sprite-studio-linux.AppImage"
+  }
+}

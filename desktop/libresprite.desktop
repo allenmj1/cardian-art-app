@@ -1,0 +1,14 @@
+[Desktop Entry]
+Type=Application
+Encoding=UTF-8
+Name=Cardian Sprite Studio
+GenericName=Sprite Editor
+Comment=Pixel art editor for Cardian cards — sync to your account
+Icon=libresprite
+Categories=Graphics;2DGraphics;RasterGraphics;
+Exec=libresprite %U
+TryExec=libresprite
+Terminal=false
+StartupNotify=false
+StartupWMClass=libresprite
+MimeType=image/bmp;image/gif;image/jpeg;image/png;image/x-pcx;image/x-tga;image/vnd.microsoft.icon;video/x-flic;image/webp;image/x-aseprite;

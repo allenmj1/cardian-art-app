@@ -1,0 +1,13 @@
+{
+  "name": "cardian-sync",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Sync pixel art from Cardian Sprite Studio to your Cardian account",
+  "bin": {
+    "cardian-sync": "./sync.mjs"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

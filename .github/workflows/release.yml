@@ -1,0 +1,158 @@
+name: Release Cardian Sprite Studio
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Release tag (e.g. v1.0.0)'
+        required: true
+        default: 'v1.0.0'
+
+permissions:
+  contents: write
+
+env:
+  UPSTREAM_TAG: v1.2
+  UPSTREAM_BASE: https://github.com/LibreSprite/LibreSprite/releases/download/v1.2
+
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Resolve tag
+        id: meta
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "tag=${{ inputs.tag }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "tag=${GITHUB_REF_NAME}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Write cardian-sync config
+        env:
+          SUPABASE_URL: ${{ secrets.CARDIAN_SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.CARDIAN_SUPABASE_ANON_KEY }}
+        run: |
+          mkdir -p cardian-sync
+          cat > cardian-sync/config.json <<EOF
+          {
+            "supabaseUrl": "${SUPABASE_URL}",
+            "anonKey": "${SUPABASE_ANON_KEY}",
+            "authUrl": "https://playcardian.com/art-studio/desktop-auth"
+          }
+          EOF
+
+      - name: Download upstream LibreSprite binaries
+        run: |
+          mkdir -p upstream
+          curl -fsSL -o upstream/windows.zip \
+            "$UPSTREAM_BASE/libresprite-development-windows-x86_64.zip"
+          curl -fsSL -o upstream/macos.dmg \
+            "$UPSTREAM_BASE/libresprite-development-macos-arm64.dmg"
+          curl -fsSL -o upstream/linux.AppImage \
+            "$UPSTREAM_BASE/LibreSprite-anylinux-x86_64.AppImage"
+          chmod +x upstream/linux.AppImage
+
+      - name: Package Windows
+        run: |
+          mkdir -p dist/windows
+          unzip -q upstream/windows.zip -d dist/windows/editor
+          cp -r cardian-sync dist/windows/cardian-sync
+          cp CARDIAN.md dist/windows/README-CARDIAN.md
+          cp branding/app.json dist/windows/app.json
+          cat > dist/windows/START-HERE.txt <<'EOF'
+          Cardian Sprite Studio (Windows)
+          ===============================
+
+          1. Open the editor folder and run LibreSprite / Cardian Sprite Studio.
+          2. Draw your card art, then File → Export as PNG.
+          3. Install Node.js 18+ if needed: https://nodejs.org/
+          4. In a terminal:
+               cd cardian-sync
+               node sync.mjs login
+               node sync.mjs upload path\to\art.png --name "My Art"
+          5. Open https://playcardian.com/art-studio to see Your Saved Sprites.
+
+          Based on LibreSprite (GPLv2). Cardian account sync included.
+          EOF
+          (cd dist/windows && zip -r ../cardian-sprite-studio-windows.zip .)
+
+      - name: Package macOS
+        run: |
+          mkdir -p dist/macos
+          cp upstream/macos.dmg dist/macos/cardian-sprite-studio-editor.dmg
+          cp -r cardian-sync dist/macos/cardian-sync
+          cp CARDIAN.md dist/macos/README-CARDIAN.md
+          cp branding/app.json dist/macos/app.json
+          cat > dist/macos/START-HERE.txt <<'EOF'
+          Cardian Sprite Studio (macOS Apple Silicon)
+          ===========================================
+
+          1. Open cardian-sprite-studio-editor.dmg and install the app.
+          2. Draw your card art, then File → Export as PNG.
+          3. Install Node.js 18+ if needed: https://nodejs.org/
+          4. In Terminal:
+               cd cardian-sync
+               node sync.mjs login
+               node sync.mjs upload ./art.png --name "My Art"
+          5. Open https://playcardian.com/art-studio to see Your Saved Sprites.
+          EOF
+          # Ship dmg as primary mac asset; also zip with sync tools
+          cp upstream/macos.dmg dist/cardian-sprite-studio-macos-arm64.dmg
+          (cd dist/macos && zip -r ../cardian-sprite-studio-macos-arm64-bundle.zip .)
+
+      - name: Package Linux
+        run: |
+          mkdir -p dist/linux
+          cp upstream/linux.AppImage dist/linux/cardian-sprite-studio-linux.AppImage
+          chmod +x dist/linux/cardian-sprite-studio-linux.AppImage
+          cp -r cardian-sync dist/linux/cardian-sync
+          cp CARDIAN.md dist/linux/README-CARDIAN.md
+          cp branding/app.json dist/linux/app.json
+          cat > dist/linux/START-HERE.txt <<'EOF'
+          Cardian Sprite Studio (Linux)
+          =============================
+
+          1. chmod +x cardian-sprite-studio-linux.AppImage && ./cardian-sprite-studio-linux.AppImage
+          2. Draw your card art, then File → Export as PNG.
+          3. Install Node.js 18+ if needed.
+          4. cd cardian-sync && node sync.mjs login && node sync.mjs upload ./art.png
+          5. Open https://playcardian.com/art-studio
+          EOF
+          cp dist/linux/cardian-sprite-studio-linux.AppImage dist/cardian-sprite-studio-linux.AppImage
+          (cd dist/linux && zip -r ../cardian-sprite-studio-linux-bundle.zip .)
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.meta.outputs.tag }}
+          name: Cardian Sprite Studio ${{ steps.meta.outputs.tag }}
+          body: |
+            **Cardian Sprite Studio** — branded LibreSprite for Cardian card art.
+
+            ### Downloads
+            - **Windows:** `cardian-sprite-studio-windows.zip` (editor + cardian-sync)
+            - **macOS (Apple Silicon):** `cardian-sprite-studio-macos-arm64.dmg` + bundle zip with sync CLI
+            - **Linux:** `cardian-sprite-studio-linux.AppImage` + bundle zip with sync CLI
+
+            ### Account sync
+            1. Export PNG from the editor
+            2. `cd cardian-sync && node sync.mjs login`
+            3. `node sync.mjs upload ./art.png --name "My Art"`
+            4. View sprites at https://playcardian.com/art-studio
+
+            Based on LibreSprite ${{ env.UPSTREAM_TAG }} (GPLv2).
+          files: |
+            dist/cardian-sprite-studio-windows.zip
+            dist/cardian-sprite-studio-macos-arm64.dmg
+            dist/cardian-sprite-studio-macos-arm64-bundle.zip
+            dist/cardian-sprite-studio-linux.AppImage
+            dist/cardian-sprite-studio-linux-bundle.zip
+          fail_on_unmatched_files: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
