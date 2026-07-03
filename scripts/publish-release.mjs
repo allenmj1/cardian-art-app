@@ -5,8 +5,9 @@ import { fileURLToPath } from 'node:url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const root = path.resolve(__dirname, '..');
-const dist = path.join(root, 'dist-release');
-const tag = process.argv[2] || 'v1.2.0';
+const appDist = path.join(root, 'desktop-app', 'dist');
+const distRelease = path.join(root, 'dist-release');
+const tag = process.argv[2] || 'v1.2.2';
 
 function getToken() {
   const out = execSync('git credential fill', {
@@ -18,6 +19,21 @@ function getToken() {
   if (!line) throw new Error('No GitHub password/token in git credentials');
   return line.slice('password='.length).trim();
 }
+
+// Prefer portable exe from electron-builder output
+const candidates = [
+  path.join(distRelease, 'CardianSpriteStudio.exe'),
+  path.join(appDist, 'CardianSpriteStudio.exe'),
+];
+let exePath = candidates.find((p) => fs.existsSync(p));
+if (!exePath) {
+  console.error('CardianSpriteStudio.exe not found. Run package build first.');
+  process.exit(1);
+}
+
+fs.mkdirSync(distRelease, { recursive: true });
+const releaseExe = path.join(distRelease, 'CardianSpriteStudio.exe');
+if (exePath !== releaseExe) fs.copyFileSync(exePath, releaseExe);
 
 const token = getToken();
 const owner = 'allenmj1';
@@ -42,18 +58,14 @@ if (existing.ok) {
       tag_name: tag,
       name: `Cardian Sprite Studio ${tag}`,
       body: [
-        '**Cardian Sprite Studio** — simple desktop app.',
+        '**Cardian Sprite Studio** — one file, no zip.',
         '',
-        '1. Download and unzip',
-        '2. Run **CardianSpriteStudio**',
+        '1. Download **CardianSpriteStudio.exe**',
+        '2. Double-click to run',
         '3. Sign in with your Cardian account **inside the app**',
         '4. Draw, save, and publish',
         '',
-        'No CLI. No token paste. Binary only.',
-        '',
-        '### Downloads',
-        '- **Windows:** `cardian-sprite-studio-windows.zip`',
-        '- **Linux:** `cardian-sprite-studio-linux-x64.zip`',
+        'Windows: `CardianSpriteStudio.exe`',
       ].join('\n'),
       draft: false,
       prerelease: false,
@@ -64,21 +76,12 @@ if (existing.ok) {
   console.log('Created release', release.id);
 }
 
-const assets = [
-  'cardian-sprite-studio-windows.zip',
-  'cardian-sprite-studio-linux-x64.zip',
-];
-
+const assets = ['CardianSpriteStudio.exe'];
 for (const name of assets) {
-  const filePath = path.join(dist, name);
-  if (!fs.existsSync(filePath)) {
-    console.warn('Missing', name);
-    continue;
-  }
+  const filePath = path.join(distRelease, name);
+  if (!fs.existsSync(filePath)) continue;
   for (const a of release.assets || []) {
-    if (a.name === name) {
-      await fetch(a.url, { method: 'DELETE', headers });
-    }
+    if (a.name === name) await fetch(a.url, { method: 'DELETE', headers });
   }
   const data = fs.readFileSync(filePath);
   const uploadUrl = `${release.upload_url.replace('{?name,label}', '')}?name=${encodeURIComponent(name)}`;
@@ -96,3 +99,4 @@ for (const name of assets) {
 }
 
 console.log('Release URL:', release.html_url);
+console.log('Direct download:', `https://github.com/${owner}/${repo}/releases/latest/download/CardianSpriteStudio.exe`);
