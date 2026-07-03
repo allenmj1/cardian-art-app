@@ -1,8 +1,10 @@
-const { app, BrowserWindow, shell, Menu } = require('electron');
+const { app, BrowserWindow, shell, Menu, nativeImage } = require('electron');
 const path = require('node:path');
 
 const STUDIO_URL = process.env.CARDIAN_STUDIO_URL || 'https://playcardian.com/art-studio/app';
 const isDev = !app.isPackaged;
+const iconPath = path.join(__dirname, 'assets', 'icon.png');
+const appIcon = nativeImage.createFromPath(iconPath);
 
 function createWindow() {
   const win = new BrowserWindow({
@@ -20,8 +22,12 @@ function createWindow() {
       nodeIntegration: false,
       sandbox: true,
     },
-    icon: path.join(__dirname, 'assets', process.platform === 'win32' ? 'icon.ico' : 'icon.png'),
+    icon: appIcon.isEmpty() ? iconPath : appIcon,
   });
+
+  if (process.platform === 'darwin' && !appIcon.isEmpty()) {
+    app.dock?.setIcon(appIcon);
+  }
 
   win.once('ready-to-show', () => win.show());
 
@@ -85,6 +91,9 @@ function createWindow() {
 }
 
 app.whenReady().then(() => {
+  if (process.platform === 'win32') {
+    app.setAppUserModelId('com.playcardian.sprite-studio');
+  }
   createWindow();
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow();
