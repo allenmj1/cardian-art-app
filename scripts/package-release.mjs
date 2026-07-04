@@ -1,15 +1,17 @@
 /**
  * Build a single CardianSpriteStudio.exe (portable) for Windows.
  * Users download the .exe and run it — no zip extraction.
+ *
+ * Always ships a version strictly greater than the latest git tag
+ * (auto patch bump unless DESKTOP_VERSION=x.y.z is set).
  */
 import fs from 'node:fs';
 import path from 'node:path';
 import { execSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
+import { appDir, ensureReleaseVersionIncreased, root } from './desktop-version.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const root = path.resolve(__dirname, '..');
-const appDir = path.join(root, 'desktop-app');
 const distRelease = path.join(root, 'dist-release');
 const appDist = path.join(appDir, 'dist');
 
@@ -22,6 +24,12 @@ function run(cmd, cwd = root) {
     env: { ...process.env, CSC_IDENTITY_AUTO_DISCOVERY: 'false' },
   });
 }
+
+const version = await ensureReleaseVersionIncreased();
+console.log(`\nPackaging Cardian Sprite Studio v${version}\n`);
+console.log(
+  `After release, set STUDIO_DESKTOP_VERSION = '${version}' in cardgame/src/utils/spriteStudioDownloads.ts\n`,
+);
 
 fs.rmSync(distRelease, { recursive: true, force: true });
 fs.mkdirSync(distRelease, { recursive: true });

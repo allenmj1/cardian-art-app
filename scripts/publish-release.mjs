@@ -2,12 +2,42 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { execSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
+import {
+  getLatestPublishedVersion,
+  getPackageVersion,
+  isNewerVersion,
+  root,
+} from './desktop-version.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const root = path.resolve(__dirname, '..');
 const appDist = path.join(root, 'desktop-app', 'dist');
 const distRelease = path.join(root, 'dist-release');
-const tag = process.argv[2] || 'v1.2.2';
+const packageVersion = getPackageVersion();
+const tag = process.argv[2] || `v${packageVersion}`;
+const tagVersion = tag.replace(/^v/i, '');
+const latestPublished = await getLatestPublishedVersion();
+
+if (tagVersion !== packageVersion) {
+  console.error(
+    `Tag ${tag} does not match package.json version ${packageVersion}. ` +
+      `Run package-release first (it auto-bumps), or pass the matching tag.`,
+  );
+  process.exit(1);
+}
+
+if (!isNewerVersion(tagVersion, latestPublished) && tagVersion !== latestPublished) {
+  console.error(
+    `Release version ${tagVersion} must be greater than latest published v${latestPublished}. ` +
+      `Run: node scripts/package-release.mjs`,
+  );
+  process.exit(1);
+}
+
+if (tagVersion === latestPublished) {
+  console.warn(`Warning: publishing to existing release v${latestPublished} (re-upload).`);
+} else {
+  console.log(`Publishing new release v${tagVersion} (was v${latestPublished})`);
+}
 
 function getToken() {
   const out = execSync('git credential fill', {
