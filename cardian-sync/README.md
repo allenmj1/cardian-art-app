@@ -19,8 +19,10 @@ set CARDIAN_AUTH_URL=https://playcardian.com/art-studio/desktop-auth
 ```bash
 node sync.mjs login
 node sync.mjs status
+node sync.mjs folders
+node sync.mjs mkdir "Card concepts"
 node sync.mjs list
-node sync.mjs upload path/to/art.png --name "My Card Art"
+node sync.mjs upload path/to/art.png --name "My Card Art" --folder "Card concepts"
 node sync.mjs logout
 ```
 
@@ -32,4 +34,4 @@ node sync.mjs logout
 4. Copy the access token and paste it into the terminal
 5. Session is saved to `~/.cardian/sprite-studio-session.json`
 
-Sprites appear under **Your Saved Sprites** at https://playcardian.com/art-studio
+Sprites and folders appear under **Your Saved Sprites** at https://playcardian.com/art-studio

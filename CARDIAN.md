@@ -50,6 +50,7 @@ That page issues an access token for the signed-in player. Tokens are stored loc
 |--------|------------------|
 | Upload PNG | `community-art` bucket → `sprites/{playerId}/{timestamp}.png` |
 | Metadata | `player_sprites` (Supabase) |
+| Folders | `player_sprite_folders` (Supabase) |
 | Publish card | Web Studio / site (`submit_community_art`) |
 
 See `cardian-sync/` for the full client.

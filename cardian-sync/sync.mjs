@@ -125,6 +125,90 @@ async function cmdStatus(cfg) {
   console.log('Supabase:', cfg.supabaseUrl);
 }
 
+async function cmdListFolders(cfg) {
+  const session = requireSession();
+  const res = await fetch(
+    `${cfg.supabaseUrl}/rest/v1/player_sprite_folders?player_id=eq.${session.userId}&order=sort_order.asc,created_at.asc`,
+    { headers: headers(session, cfg) },
+  );
+  if (!res.ok) {
+    console.error(await res.text());
+    process.exit(1);
+  }
+  const rows = await res.json();
+  if (!rows.length) {
+    console.log('No folders yet.');
+    return;
+  }
+  for (const row of rows) {
+    console.log(`${row.id}  ${row.name}`);
+  }
+}
+
+async function cmdMkdir(cfg, name) {
+  const session = requireSession();
+  const trimmed = String(name || '').trim();
+  if (!trimmed) {
+    console.error('Folder name is required.');
+    process.exit(1);
+  }
+
+  const existingRes = await fetch(
+    `${cfg.supabaseUrl}/rest/v1/player_sprite_folders?player_id=eq.${session.userId}&select=sort_order&order=sort_order.desc&limit=1`,
+    { headers: headers(session, cfg) },
+  );
+  if (!existingRes.ok) {
+    console.error(await existingRes.text());
+    process.exit(1);
+  }
+  const existing = await existingRes.json();
+  const nextOrder = ((existing[0]?.sort_order ?? -1) + 1);
+
+  const res = await fetch(`${cfg.supabaseUrl}/rest/v1/player_sprite_folders`, {
+    method: 'POST',
+    headers: {
+      ...headers(session, cfg),
+      Prefer: 'return=representation',
+    },
+    body: JSON.stringify({
+      player_id: session.userId,
+      name: trimmed,
+      sort_order: nextOrder,
+    }),
+  });
+  if (!res.ok) {
+    console.error(await res.text());
+    process.exit(1);
+  }
+  const [row] = await res.json();
+  console.log('Created folder:', row.name);
+  console.log(row.id);
+}
+
+async function resolveFolderId(cfg, session, folderRef) {
+  if (!folderRef) return null;
+  const trimmed = String(folderRef).trim();
+  if (!trimmed) return null;
+
+  const byIdRes = await fetch(
+    `${cfg.supabaseUrl}/rest/v1/player_sprite_folders?id=eq.${encodeURIComponent(trimmed)}&player_id=eq.${session.userId}&limit=1`,
+    { headers: headers(session, cfg) },
+  );
+  if (!byIdRes.ok) throw new Error(await byIdRes.text());
+  const byId = await byIdRes.json();
+  if (byId[0]?.id) return byId[0].id;
+
+  const byNameRes = await fetch(
+    `${cfg.supabaseUrl}/rest/v1/player_sprite_folders?player_id=eq.${session.userId}&name=eq.${encodeURIComponent(trimmed)}&limit=1`,
+    { headers: headers(session, cfg) },
+  );
+  if (!byNameRes.ok) throw new Error(await byNameRes.text());
+  const byName = await byNameRes.json();
+  if (byName[0]?.id) return byName[0].id;
+
+  throw new Error(`Folder not found: ${trimmed}`);
+}
+
 async function cmdList(cfg) {
   const session = requireSession();
   const res = await fetch(
@@ -141,11 +225,12 @@ async function cmdList(cfg) {
     return;
   }
   for (const row of rows) {
-    console.log(`${row.id}  ${row.name}  ${row.source}  ${row.art_url}`);
+    const folder = row.folder_id ? `folder:${row.folder_id}` : 'unfiled';
+    console.log(`${row.id}  ${row.name}  ${row.source}  ${folder}  ${row.art_url}`);
   }
 }
 
-async function cmdUpload(cfg, filePath, name) {
+async function cmdUpload(cfg, filePath, name, folderRef) {
   const session = requireSession();
   const abs = path.resolve(filePath);
   if (!fs.existsSync(abs)) {
@@ -157,6 +242,8 @@ async function cmdUpload(cfg, filePath, name) {
     console.error('Image must be 2 MB or smaller');
     process.exit(1);
   }
+
+  const folderId = await resolveFolderId(cfg, session, folderRef);
 
   const timestamp = Date.now();
   const fileStoragePath = `sprites/${session.userId}/${timestamp}.png`;
@@ -188,6 +275,7 @@ async function cmdUpload(cfg, filePath, name) {
     },
     body: JSON.stringify({
       player_id: session.userId,
+      folder_id: folderId,
       name: spriteName,
       file_path: fileStoragePath,
       art_url: artUrl,
@@ -221,8 +309,10 @@ function printHelp() {
 Usage:
   node sync.mjs login
   node sync.mjs status
+  node sync.mjs folders
+  node sync.mjs mkdir "Folder name"
   node sync.mjs list
-  node sync.mjs upload <file.png> [--name "Sprite name"]
+  node sync.mjs upload <file.png> [--name "Sprite name"] [--folder <folder id or name>]
   node sync.mjs logout
 `);
 }
@@ -238,6 +328,15 @@ async function main() {
 
   if (cmd === 'login') return cmdLogin(cfg);
   if (cmd === 'status') return cmdStatus(cfg);
+  if (cmd === 'folders') return cmdListFolders(cfg);
+  if (cmd === 'mkdir') {
+    const name = rest.find((a) => !a.startsWith('--'));
+    if (!name) {
+      console.error('Usage: node sync.mjs mkdir "Folder name"');
+      process.exit(1);
+    }
+    return cmdMkdir(cfg, name);
+  }
   if (cmd === 'list') return cmdList(cfg);
   if (cmd === 'logout') {
     clearSession();
@@ -247,12 +346,14 @@ async function main() {
   if (cmd === 'upload') {
     const file = rest.find((a) => !a.startsWith('--'));
     const nameIdx = rest.indexOf('--name');
+    const folderIdx = rest.indexOf('--folder');
     const name = nameIdx >= 0 ? rest[nameIdx + 1] : undefined;
+    const folder = folderIdx >= 0 ? rest[folderIdx + 1] : undefined;
     if (!file) {
-      console.error('Usage: node sync.mjs upload <file.png> [--name "Name"]');
+      console.error('Usage: node sync.mjs upload <file.png> [--name "Name"] [--folder <folder id or name>]');
       process.exit(1);
     }
-    return cmdUpload(cfg, file, name);
+    return cmdUpload(cfg, file, name, folder);
   }
 
   console.error('Unknown command:', cmd);
