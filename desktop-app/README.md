@@ -4,7 +4,7 @@ Simple desktop app: **download → run → sign in inside the window**.
 
 Opens the Cardian Sprite Studio site in a native window with Cardian branding. Login, drawing, save, and publish all happen in the UI — no CLI or token paste.
 
-The app loads the live studio home screen: saved art and folders first, then create-new canvas types (Card, Avatar, Banner, Frame) — same as Web Studio.
+The app loads the live studio home screen: create-new canvas types first (Card, Avatar, Banner, Frame), then saved art and folders — same as Web Studio.
 
 ## Develop
 
